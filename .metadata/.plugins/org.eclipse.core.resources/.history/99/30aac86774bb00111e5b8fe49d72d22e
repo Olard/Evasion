@@ -1,0 +1,44 @@
+/*
+ * MultiMediaTechnology / QPT1 / Öhlinger Bernhard
+ */
+
+#ifndef Entity_h
+#define Entity_h
+
+#include <glm/glm.hpp>	// Header for vectors
+#include <GL/gl.h>		// OpenGL header for datatypes
+
+#include "../network/Command.h"
+
+class Entity {
+	/**
+	 * Fields
+	 */
+	public:
+		glm::core::type::dvec3 position;
+		GLdouble radius;
+		unsigned id;
+	protected:
+		static unsigned id_counter;
+	/**
+	 * Constructors / Destructor
+	 */
+	public:
+		Entity();
+		/**
+		 * Standard constructor
+		 *
+		 * @param position the position of the entity
+		 * @param radius the radius of the entity
+		 */
+		Entity(glm::core::type::dvec3 position, GLdouble radius);
+		virtual ~Entity();
+	/**
+	 * Methods
+	 */
+	public:
+		Command getDeleteCommand() const;
+		virtual void update() = 0;
+};
+
+#endif

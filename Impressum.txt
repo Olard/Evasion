@@ -1,0 +1,11 @@
+Studiengang: MultiMediaTechnology
+Zweck: QPT1
+Student: Öhlinger Bernhard
+
+Quellcode in:
+Evasion-eclipse\src
+Evasion-Server\src
+
+Executables in:
+Client.zip
+Server.zip

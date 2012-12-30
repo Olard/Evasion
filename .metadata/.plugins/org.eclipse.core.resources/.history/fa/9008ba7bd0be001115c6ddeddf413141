@@ -1,0 +1,240 @@
+/*
+ * MultiMediaTechnology / QPT1 / Öhlinger Bernhard
+ */
+
+// Input and output for configuration
+#include <iostream>
+
+// For Threading and Network code
+#include <process.h>
+#include "network/ServerSocket.h"
+#include "network/Command.h"
+
+// The Entities
+#include "entities/World.h"
+#include "entities/Client.h"
+#include "entities/Obstacle.h"
+#include "entities/Projectile.h"
+
+// For random numbers
+#include <stdlib.h>
+#include <time.h>
+
+#include "Generation.h"
+
+using namespace std;
+using namespace glm::core::type;
+using namespace glm::core::function::geometric;
+
+#define SPAWN_DELAY 5000
+#define SPAWN_AMOUNT 10
+
+World *world;
+
+/**
+ * Server-Thread which updates the objects on the server and generates projectiles.
+ */
+unsigned __stdcall server(void* arguments) {
+	while (1) {
+		while (world->clients.size() == 0)  { // Wait for clients
+			Sleep(500);
+		}
+		unsigned projectileTime = 0;
+		while (world->clients.size() > 0) { // While there are clients
+			Sleep(30);
+
+			projectileTime += 30;
+			world->update();
+			continue;
+			vector<Entity*> deleteList; // List for deletion of the objects after the iteration
+
+			for (list<Entity*>::iterator iterator = world->entities.begin(), end = world->entities.end(); iterator != end; ++iterator) {
+				Projectile *projectile = dynamic_cast<Projectile*> (*iterator);
+				// Projectiles that hit the surface are converted to Obstacles
+				if (projectile && length(projectile->position) > world->radius) {
+						Obstacle *obstacle = new Obstacle(normalize(projectile->position) * world->radius, projectile->radius);
+						world->entities.push_back(obstacle);
+						world->sendToAll(obstacle->getNewCommand());
+						world->sendToAll(projectile->getDeleteCommand());
+						deleteList.push_back(projectile);
+				}
+			}
+
+			for (unsigned i = 0; i < deleteList.size(); ++i) {
+				world->entities.remove(deleteList[i]);
+				delete deleteList[i];
+			}
+			deleteList.clear();
+
+			if (projectileTime > SPAWN_DELAY) {
+				projectileTime -= SPAWN_DELAY;
+
+				// Spawn some random projectiles
+				for (unsigned i = 0; i < SPAWN_AMOUNT; ++i) {
+					Projectile *projectile = new Projectile(world, generateDirection(), generateRadius(5, 35));
+					world->entities.push_back(projectile);
+					world->sendToAll(projectile->getNewCommand());
+				}
+
+				// Spawn a projectile for each player
+				for (list<Client*>::const_iterator iterator = world->clients.begin(), end = world->clients.end(); iterator != end; ++iterator) {
+					Projectile *projectile = new Projectile(world, normalize((*iterator)->position), generateRadius(5, 35));
+					world->entities.push_back(projectile);
+					world->sendToAll(projectile->getNewCommand());
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+/**
+ * Client-Thread for each client that handles the individual communication
+ */
+unsigned __stdcall answer(void* a) {
+	Socket* socket = (Socket*) a;
+	Client* client = new Client(socket, world);
+
+	world->entities.push_back(client);
+	world->clients.push_back(client);
+	// First send the world radius
+	Command worldCommand("World");
+	worldCommand.add(world->radius);
+	socket->sendLine(worldCommand.getCommand());
+	// Then send the players position in it
+	Command playerIDCommand("You");
+	client->position = generateDirection() * world->radius;
+	client->addStatus(playerIDCommand);
+	socket->sendLine(playerIDCommand.getCommand());
+
+	// Send all the other entities to the player and publish the player to the other clients
+	Command thisPlayer = client->getNewPlayer();
+	for (list<Entity*>::const_iterator iterator = world->entities.begin(), end = world->entities.end(); iterator != end; ++iterator) {
+		if ((*iterator)->id != client->id) {
+			Client *otherClient = dynamic_cast<Client*> (*iterator);
+			if (otherClient) {
+				Command otherPlayer = otherClient->getNewPlayer();
+				otherClient->socket->sendLine(thisPlayer.getCommand());
+				client->socket->sendLine(otherPlayer.getCommand());
+			} else {
+				Obstacle *obstacle = dynamic_cast<Obstacle*> (*iterator);
+				if (obstacle) {
+					Command obstalceCommand = obstacle->getNewCommand();
+					client->socket->sendLine(obstalceCommand.getCommand());
+				} else {
+					Projectile *projectile = dynamic_cast<Projectile*> (*iterator);
+					if (projectile) {
+						Command projectileCommand = projectile->getNewCommand();
+						client->socket->sendLine(projectileCommand.getCommand());
+					}
+				}
+			}
+		}
+	}
+
+	unsigned timeout = 0;
+	while (timeout < 5000 && client->getCurrentHP() > 0) { // After 5 Seconds the client times out
+		Sleep(30);
+		timeout += 30;
+		string clientUpdate = socket->receiveLine();
+		while (clientUpdate != "" && clientUpdate != "\n") {
+			if (client)
+			timeout = 0;
+			Command clientCommand(clientUpdate);
+			if (clientCommand == "Player") {
+				clientCommand.add(client->getCurrentHP());
+				for (list<Client*>::const_iterator iterator = world->clients.begin(), end = world->clients.end(); iterator != end; ++iterator) {
+					if ((*iterator)->id != client->id) {
+						(*iterator)->socket->sendLine(clientCommand.getCommand());
+					} else {
+						(*iterator)->parseUpdate(clientCommand);
+					}
+				}
+			} else if (clientCommand == "Hp") {
+				client->loseHp(atoi(clientCommand.getParameter(0).c_str()));
+				Command hpCommand("Hp");
+				hpCommand.add(client->getCurrentHP());
+				client->socket->sendLine(hpCommand.getCommand());
+			}
+			clientUpdate = socket->receiveLine();
+		}
+	}
+	// Send that the client has disconnected
+	for (list<Client*>::const_iterator iterator = world->clients.begin(), end = world->clients.end(); iterator != end; ++iterator) {
+		if ((*iterator)->id != client->id) {
+			(*iterator)->socket->sendLine(client->getDeleteCommand().getCommand());
+		}
+	}
+
+	cout << "Client disconnected" << endl;
+	world->entities.remove(client);
+	world->clients.remove(client);
+	delete socket;
+	delete client;
+
+	return 0;
+}
+
+int main(int argc, char* argv[]) {
+	/*
+	 * Starting configuration
+	 */
+	srand ( time(0) );
+	char c;
+	int port = 2302;
+	GLdouble radius = 300.0;
+	unsigned startObjects = 75;
+	cout << "Standard configuration (300 radius, 75 starting objects, port 2302)? y for yes:";
+	cin >> c;
+
+	if (c != 'y' && c != 'Y') {
+		cout << "Worldradius (300.0 is a good value): ";
+
+		cin >> radius;
+		while (radius < 100.0) {
+			cout << "Radius has to be over 100.0, try again:";
+			cin >> radius;
+		}
+
+		cout << "Starting objects (should be less then 1000):";
+		cin >> startObjects;
+
+		cout << "The listening port (for example 2302):";
+		cin >> port;
+	}
+	world = generateWorld(radius, startObjects);
+	bool worked = false;
+	ServerSocket *in = 0;
+	while (!worked) {
+		try {
+			in = new ServerSocket(port, 64);
+			worked = true;
+		} catch (NetworkException &ex) {
+			cout << "Could not listen on port " << port << ", new port:";
+			cin >> port;
+		}
+	}
+
+	/**
+	 * Start the server thread.
+	 */
+	unsigned ret;
+	_beginthreadex(0, 0, server, (void*) 0, 0, &ret);
+
+
+	cout << "Server is now listening..." << endl;
+	while (1) {
+		/*
+		 * Wait for clients to connect.
+		 */
+		Socket* s = in->acceptClient();
+		cout << "Client connected" << endl;
+		unsigned ret1;
+		_beginthreadex(0, 0, answer, (void*) s, 0, &ret1);
+	}
+
+	// Program never reaches this point
+	delete in;
+	delete world;
+	return 0;
+}

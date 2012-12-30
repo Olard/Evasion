@@ -1,0 +1,19 @@
+
+**** Rebuild of configuration Debug for project Evasion-Server ****
+
+**** Internal Builder is used for build               ****
+g++ -IC:\Users\bernhard\git\qpt1\Evasion-eclipse\lib\glm-0.9.0.7\include -O0 -g3 -Wall -c -fmessage-length=0 -o src\Generation.o ..\src\Generation.cpp
+g++ -IC:\Users\bernhard\git\qpt1\Evasion-eclipse\lib\glm-0.9.0.7\include -O0 -g3 -Wall -c -fmessage-length=0 -o src\network\SelectionSocket.o ..\src\network\SelectionSocket.cpp
+g++ -IC:\Users\bernhard\git\qpt1\Evasion-eclipse\lib\glm-0.9.0.7\include -O0 -g3 -Wall -c -fmessage-length=0 -o src\entities\Entity.o ..\src\entities\Entity.cpp
+g++ -IC:\Users\bernhard\git\qpt1\Evasion-eclipse\lib\glm-0.9.0.7\include -O0 -g3 -Wall -c -fmessage-length=0 -o src\entities\Obstacle.o ..\src\entities\Obstacle.cpp
+g++ -IC:\Users\bernhard\git\qpt1\Evasion-eclipse\lib\glm-0.9.0.7\include -O0 -g3 -Wall -c -fmessage-length=0 -o src\network\ServerSocket.o ..\src\network\ServerSocket.cpp
+g++ -IC:\Users\bernhard\git\qpt1\Evasion-eclipse\lib\glm-0.9.0.7\include -O0 -g3 -Wall -c -fmessage-length=0 -o src\entities\World.o ..\src\entities\World.cpp
+g++ -IC:\Users\bernhard\git\qpt1\Evasion-eclipse\lib\glm-0.9.0.7\include -O0 -g3 -Wall -c -fmessage-length=0 -o src\entities\Client.o ..\src\entities\Client.cpp
+g++ -IC:\Users\bernhard\git\qpt1\Evasion-eclipse\lib\glm-0.9.0.7\include -O0 -g3 -Wall -c -fmessage-length=0 -o src\entities\Projectile.o ..\src\entities\Projectile.cpp
+g++ -IC:\Users\bernhard\git\qpt1\Evasion-eclipse\lib\glm-0.9.0.7\include -O0 -g3 -Wall -c -fmessage-length=0 -o src\network\ClientSocket.o ..\src\network\ClientSocket.cpp
+g++ -IC:\Users\bernhard\git\qpt1\Evasion-eclipse\lib\glm-0.9.0.7\include -O0 -g3 -Wall -c -fmessage-length=0 -o src\network\Socket.o ..\src\network\Socket.cpp
+g++ -IC:\Users\bernhard\git\qpt1\Evasion-eclipse\lib\glm-0.9.0.7\include -O0 -g3 -Wall -c -fmessage-length=0 -o src\Evasion-Server.o ..\src\Evasion-Server.cpp
+g++ -IC:\Users\bernhard\git\qpt1\Evasion-eclipse\lib\glm-0.9.0.7\include -O0 -g3 -Wall -c -fmessage-length=0 -o src\network\Command.o ..\src\network\Command.cpp
+g++ -LC:\Users\bernhard\git\qpt1\Evasion-Server\lib -o Evasion-Server.exe src\network\Socket.o src\network\ServerSocket.o src\network\SelectionSocket.o src\network\Command.o src\network\ClientSocket.o src\entities\World.o src\entities\Projectile.o src\entities\Obstacle.o src\entities\Entity.o src\entities\Client.o src\Generation.o src\Evasion-Server.o -lws2_32
+Build complete for project Evasion-Server
+Time consumed: 25936  ms.  

@@ -1,0 +1,59 @@
+/*
+ * MultiMediaTechnology / QPT1 / Öhlinger Bernhard
+ */
+
+#ifndef OBSTACLE_H_
+#define OBSTACLE_H_
+
+#include "Entity.h"
+#include "../network/Command.h"
+#include <oogl/Texture.h>
+
+class Obstacle: public Entity {
+	/**
+	 * Fields
+	 */
+	private:
+		static oogl::Texture* texture;
+		GLUquadric *qobj;
+	/**
+	 * Constructors / Destructor
+	 */
+	public:
+		Obstacle();
+		/**
+		 * Standard constructor
+		 *
+		 * @param position the obstacle's position
+		 * @param radius the obstacle's radius
+		 */
+		Obstacle(glm::core::type::dvec3 position, GLdouble radius);
+		virtual ~Obstacle();
+	/**
+	 * Methods
+	 */
+	public:
+		/**
+		 * Inherited from Entity
+		 */
+		virtual void update();
+
+		/**
+		 * Inherited from Entity
+		 */
+		virtual void draw();
+
+		/**
+		 * Parses the command into the attributes of the obstacle
+		 *
+		 * @param command the command to parse from
+		 */
+		void parseUpdate(Command& command);
+
+		/**
+		 * Initializes the texture that is used by the obstacle
+		 */
+		static void initTexture();
+};
+
+#endif /* OBSTACLE_H_ */

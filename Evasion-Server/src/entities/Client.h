@@ -1,0 +1,74 @@
+/*
+ * MultiMediaTechnology / QPT1 / Öhlinger Bernhard
+ */
+
+#ifndef CLIENT_H_
+#define CLIENT_H_
+
+#include "World.h"
+#include "../network/Socket.h"
+#include <vector>
+
+#define PLAYER_SIZE 5
+#define PLAYER_HP 4
+
+class Client : public Entity {
+	/*
+	 * Fields
+	 */
+	public:
+		const Socket* socket;
+	private:
+		unsigned hp[PLAYER_HP];
+		const World* world;
+		glm::core::type::dvec3 direction;
+		glm::core::type::dvec3 velocity;
+	/*
+	 * Constructor / Destructor
+	 */
+	public:
+		/**
+		 * Standard constructor
+		 *
+		 * @param socket the connection to the client
+		 * @param world the world of the client
+		 */
+		Client(const Socket* socket, const World* world);
+	/*
+	 * Methods
+	 */
+	public:
+		/**
+		 * Adds the full status of the client (Position, Velocity, Direction and HP) to the given command.
+		 */
+		Command& addStatus(Command& command) const;
+
+		/**
+		 * Returns the current hp of the client
+		 */
+		unsigned getCurrentHP() const;
+
+		/**
+		 * Returns the command that tells the clients that there is a new player.
+		 */
+		Command getNewPlayer() const;
+
+		/**
+		 * Lets the object with the given ID take one of the HP of the client.
+		 */
+		bool loseHp(unsigned id);
+
+		/**
+		 * Inherited update function
+		 */
+		virtual void update();
+
+		/**
+		 * Parses the command to the clients attributes
+		 *
+		 * @param command the command to parse from
+		 */
+		void parseUpdate(Command& command);
+};
+
+#endif /* CLIENT_H_ */

@@ -1,0 +1,34 @@
+/*
+ * MultiMediaTechnology / QPT1 / Öhlinger Bernhard
+ */
+
+#ifndef PROJECTILE_H_
+#define PROJECTILE_H_
+
+#define PROJECTILE_SPEED 3.0
+
+#include "World.h"
+
+class Projectile: public Entity {
+	/**
+	 * Fields
+	 */
+	private:
+		World* world;
+		GLdouble velocity;
+	/**
+	 * Constructors / Destructor
+	 */
+	public:
+		Projectile(World *world, glm::core::type::dvec3 position, GLdouble radius);
+		virtual ~Projectile();
+	/**
+	 * Methods
+	 */
+	public:
+		Command getNewCommand() const;
+		Command getUpdateCommand() const;
+		virtual void update();
+};
+
+#endif /* PROJECTILE_H_ */

@@ -1,0 +1,37 @@
+/*
+ * MultiMediaTechnology / QPT1 / Öhlinger Bernhard
+ */
+
+#ifndef Entity_h
+#define Entity_h
+
+#include <glm/glm.hpp>
+#include <GLee.h>
+#include <GL/gl.h>		// OpenGL header for datatypes
+
+class Entity {
+	/**
+	 * Fields
+	 */
+	public:
+		glm::core::type::dvec3 position;
+		GLdouble radius;
+		unsigned id;
+	protected:
+		static unsigned id_counter;
+	/**
+	 * Constructors / Destructor
+	 */
+	public:
+		Entity();
+		Entity(glm::core::type::dvec3 position, GLdouble radius);
+		virtual ~Entity();
+	/**
+	 * Methods
+	 */
+	public:
+		virtual void update() = 0;
+		virtual void draw() = 0;
+};
+
+#endif

@@ -1,0 +1,43 @@
+/*
+ * MultiMediaTechnology / QPT1 / Öhlinger Bernhard
+ */
+
+#ifndef COMMAND_H_
+#define COMMAND_H_
+
+#include <list>
+#include <string>
+
+/**
+ * This class encapsulates the commands that are sent to a client.
+ */
+class Command {
+	/** Fields */
+	private:
+		std::string command;
+		std::list<std::string> parameters;
+	/** Constructors / Destructor */
+	public:
+		Command(std::string command);
+		virtual ~Command();
+
+	/** Methods */
+	public:
+		std::string getParameter(unsigned index) const;
+		std::string getCommand() const;
+
+		/** Two commands are equal when there command string before the '(' is the same */
+		bool operator==(const std::string &other) const;
+		bool operator==(const char* other) const;
+
+		/** Adds the given value to the command (seperated by a ',') */
+		Command& add(std::string &param);
+		Command& add(float param);
+		Command& add(double param);
+		Command& add(unsigned param);
+		Command& add(int param);
+		Command& add(Command &param);
+		Command& add(const char* param);
+};
+
+#endif /* COMMAND_H_ */
